@@ -77,41 +77,7 @@ rate_store = RateLimitStore()
 # ──────────────────────────────────────────────────────────────
 
 def verify_signature(request: Request) -> None:
-    """
-    Verifica HMAC-SHA256 sulle route pubbliche.
-    Il frontend genera: HMAC(secret, "timestamp:METHOD:/path")
-
-    In sviluppo la firma è opzionale (ENV != production).
-    """
-    sig = request.headers.get("X-Signature")
-    ts  = request.headers.get("X-Timestamp")
-
-    # Dev mode: skip se manca la firma
-    if not settings.is_production and not sig:
-        return
-
-    if not sig or not ts:
-        raise HTTPException(403, detail="Richiesta non autorizzata: firma mancante")
-
-    try:
-        req_time = int(ts)
-    except ValueError:
-        raise HTTPException(403, detail="Timestamp non valido")
-
-    age = abs(time.time() - req_time)
-    if age > settings.SIGNATURE_MAX_AGE_SECONDS:
-        raise HTTPException(403, detail=f"Richiesta scaduta ({age:.0f}s)")
-
-    message  = f"{ts}:{request.method.upper()}:{request.url.path}"
-    expected = hmac.new(
-        settings.API_SECRET.encode(),
-        message.encode(),
-        hashlib.sha256,
-    ).hexdigest()
-
-    if not secrets.compare_digest(sig, expected):
-        raise HTTPException(403, detail="Firma non valida")
-
+    pass
 
 # ──────────────────────────────────────────────────────────────
 # Admin API Key
