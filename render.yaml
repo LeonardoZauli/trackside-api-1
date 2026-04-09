@@ -1,0 +1,50 @@
+# ─────────────────────────────────────────────────────────────────
+# render.yaml — Deploy automatico su Render.com
+#
+# COME USARE:
+#   1. Push questo repo su GitHub
+#   2. Su render.com → New → Web Service → connetti il repo
+#   3. Render rileva questo file e configura tutto automaticamente
+#   4. Aggiungi le variabili d'ambiente sensibili nel pannello Render
+#      (API_SECRET, ADMIN_API_KEY, ALLOWED_ORIGINS)
+# ─────────────────────────────────────────────────────────────────
+
+services:
+  - type: web
+    name: lidl-predictor-api
+    runtime: docker
+    dockerfilePath: ./production/Dockerfile
+    dockerContext: ./production
+
+    # Piano: free (con sleep dopo 15min di inattività)
+    # Upgrade a "starter" ($7/mese) per nessun sleep
+    plan: free
+
+    # Render imposta PORT automaticamente
+    # healthCheckPath è usato da Render per verificare che l'app sia up
+    healthCheckPath: /health
+
+    # Variabili d'ambiente NON sensibili (le sensibili vanno nel pannello!)
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: ENABLE_DOCS
+        value: "false"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: MODEL_PATH
+        value: models/lidl_predictor_v4.pkl
+      - key: CSV_PATH
+        value: data/lidl_prodotti.csv
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "60"
+      - key: SIGNATURE_MAX_AGE_SECONDS
+        value: "60"
+
+      # ⚠️  QUESTE LE DEVI IMPOSTARE MANUALMENTE NEL PANNELLO RENDER!
+      # - key: API_SECRET
+      #   value: <genera con: python -c "import secrets; print(secrets.token_hex(32))">
+      # - key: ADMIN_API_KEY
+      #   value: <genera con: python -c "import secrets; print(secrets.token_hex(32))">
+      # - key: ALLOWED_ORIGINS
+      #   value: https://tuosito.com,https://www.tuosito.com
