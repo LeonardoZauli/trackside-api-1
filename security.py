@@ -165,9 +165,10 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         if settings.is_production and path not in self.BYPASS_PATHS:
             origin  = request.headers.get("Origin", "")
             referer = request.headers.get("Referer", "")
-            ok = (
-                any(origin.startswith(o) for o in settings.cors_origins) or
-                any(referer.startswith(o) for o in settings.cors_origins)
+            allow_all = "*" in settings.cors_origins
+            ok = allow_all or (
+                    any(origin.startswith(o) for o in settings.cors_origins) or
+                    any(referer.startswith(o) for o in settings.cors_origins)
             )
             if not ok:
                 logger.warning("Origin bloccato: '%s' da IP %s", origin or referer, ip)
